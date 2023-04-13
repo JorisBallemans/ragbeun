@@ -1,0 +1,141 @@
+from flask import Flask, jsonify
+import openpyxl
+
+app = Flask(__name__)
+
+@app.route("/total")
+def display_value():
+    workbook = openpyxl.load_workbook("auction.xlsx", data_only=True)
+    worksheet = workbook["Sheet1"]
+    cell = worksheet["G2"]
+    value = cell.value
+    return jsonify({'value': value})
+
+@app.route("/")
+def index():
+  return '''
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Ragweek</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        @font-face {
+            font-family: oswald;
+            src: url("/static/fonts/Oswald-Medium.ttf") format('truetype');
+        }
+
+        body{
+            font-family: oswald;
+        }
+
+        .magenta-bar{
+            background-color: #e62272;
+        }
+    </style>
+  </head>
+  <body style="height: 100%;">
+    <div style="padding-top: 10px" class="container align-middle">
+      <div class="row">
+        <div class="col-sm-12 text-center mt-5">
+          <h1 id="value" style="font-size: 8em;">BEDRAG</h1>
+          <div class="progress mt-4" style="height: 30%;">
+            <div style="background-color: #e62272;" id="bar1" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
+          </div>
+          <div class="progress mt-4" style="height: 30%;">
+            <div style="background-color: #e62272;" id="bar2" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
+          </div>
+          <div class="progress mt-4" style="height: 30%;">
+            <div style="background-color: #e62272;" id="bar3" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
+          </div>
+          <div class="progress mt-4" style="height: 30%;">
+            <div style="background-color: #e62272;" id="bar4" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
+          </div>
+          <div class="progress mt-4" style="height: 30%;">
+            <div style="background-color: #e62272;" id="bar5" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
+          </div>
+          <div class="progress mt-4" style="height: 30%;">
+            <div style="background-color: #e62272;" id="bar6" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Include Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+          <script>
+              function updateValue() {
+                  $.getJSON('/total', function(data) {
+                      $('#value').text('Total: €' + data.value);
+                      $('#bar1').width((data.value/500)*100 + '%');
+                      $('#bar2').width((data.value/700)*100 + '%');
+                      $('#bar3').width((data.value/850)*100 + '%');
+                      $('#bar4').width((data.value/1000)*100 + '%');
+                      $('#bar5').width((data.value/1100)*100 + '%');
+                      $('#bar6').width((data.value/1250)*100 + '%');
+                  });
+              }
+              setInterval(updateValue, 1000);
+    </script>
+  </body>
+  </html>
+  '''
+    # return '''
+    #     <!DOCTYPE html>
+    #     <html lang="en">
+    #     <head>
+    #       <meta charset="UTF-8">
+    #       <title>Progress Bar Example</title>
+    #       <!-- Include Bootstrap CSS -->
+    #       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    #       <style>
+    #           @font-face {
+    #               font-family: oswald;
+    #               src: url("/static/fonts/Oswald-Medium.ttf") format('truetype');
+    #           }
+
+    #           body{
+    #               font-family: oswald;
+    #           }
+
+    #           .magenta-bar{
+    #               background-color: #e62272;
+    #           }
+    #       </style>
+    #     </head>
+    #     <body style="height: 100%;">
+    #       <div style="padding-top: 250px" class="container align-middle">
+    #         <div class="row">
+    #           <div class="col-sm-12 text-center mt-5">
+    #             <h1 id="value" style="font-size: 8em;">BEDRAG</h1>
+    #             <div class="progress mt-4" style="height: 80%;">
+    #               <div style="background-color: #e62272;" id="bar" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
+    #             </div>
+    #           </div>
+    #         </div>
+    #       </div>
+    #       <!-- Include Bootstrap JS -->
+    #       <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    #       <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    #       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    #       <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    #             <script>
+    #                 function updateValue() {
+    #                     $.getJSON('/total', function(data) {
+    #                         $('#value').text('Total: €' + data.value);
+    #                         $('#bar').width((data.value/1500)*100 + '%');
+                           
+    #                     });
+    #                 }
+    #                 setInterval(updateValue, 1000);
+    #       </script>
+    #     </body>
+    #     </html>
+    # '''
+    
+if __name__ == '__main__':
+    app.run()

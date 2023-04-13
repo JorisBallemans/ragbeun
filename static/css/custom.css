@@ -1,0 +1,17 @@
+@font-face {
+    font-family: gillsans;
+    src: url("/static/fonts/GillSansMT-Condensed.ttf") format('truetype');
+  }
+
+  @font-face {
+    font-family: oswald;
+    src: url("/static/fonts/Oswald-Medium.ttf") format('truetype');
+  }
+
+body{
+    font-family: oswald;
+}
+
+.magenta-bar{
+    background-color: #e62272;
+}
