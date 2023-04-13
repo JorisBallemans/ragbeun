@@ -62,8 +62,9 @@
                   $('#bar5').width((data.value/1100)*100 + '%');
                   $('#bar6').width((data.value/1250)*100 + '%');
               });
+              setTimeout(updateValue, 5000);
           }
-          setInterval(updateValue, 5000);
+          updateValue();
 </script>
 </body>
 </html>
