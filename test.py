@@ -15,7 +15,7 @@ SHIFT_ID = 49
 
 PROFIT_PER_PRODUCT = {
     "Beer": 0.20,
-    "Alcohol free beer": 0.25,
+    "Radler 0.00": 0.25,
     "Craft beer": 0.00,
     "Wine": 0.38,
     "Tripel Karmeliet": 0.29,
