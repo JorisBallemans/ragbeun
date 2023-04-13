@@ -1,141 +1,57 @@
-from flask import Flask, jsonify
+import decimal
+
+from flask import Flask, jsonify, render_template
 import openpyxl
+
+from concrexit.legacy import ConcrexitLegacyAPIService
 
 app = Flask(__name__)
 
+USERNAME = "USERNAME"
+PASSWORD = "PASSWORD"
+CLIENT_ID = "dHhHjKsdRj7L7jeUPaenPZWXpdYGgUunm14HD09F"
+CLIENT_SECRET = "OjRnPXBIN5sueeIWChHrV5WD9XAmIJUtHx1uH4korcOWmPXP89zLxNSmBZcjXDhqsIdD1x2KCd0es806E6nkq2kCSRxfy7Q17BsWmBnaOE2kb48qrfV8ztH1SHa2SOqz"
+SHIFT_ID = 49
+
+FILENAME = "auction.xlsx"
+SHEET = "Sheet1"
+CELL = "G2"
+
+
+def get_total_sales_revenue():
+    try:
+        concrexit = ConcrexitLegacyAPIService(base_url="https://thalia.nu", username=USERNAME,password=PASSWORD, client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+        response = concrexit.get(f"/api/v2/admin/sales/shifts/{SHIFT_ID}/")
+    except Exception:
+        return 0
+
+    if response.status_code == 200:
+        shift_data = response.json()
+        return decimal.Decimal(shift_data["total_revenue"])
+    else:
+        return 0
+
+
+def get_auction_revenue():
+    try:
+        workbook = openpyxl.load_workbook(FILENAME, data_only=True)
+        worksheet = workbook[SHEET]
+        cell = worksheet[CELL]
+        return cell.value
+    except Exception:
+        return 0
+
+
 @app.route("/total")
 def display_value():
-    workbook = openpyxl.load_workbook("auction.xlsx", data_only=True)
-    worksheet = workbook["Sheet1"]
-    cell = worksheet["G2"]
-    value = cell.value
+    value = get_total_sales_revenue() / 2 + get_auction_revenue()
     return jsonify({'value': value})
+
 
 @app.route("/")
 def index():
-  return '''
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Ragweek</title>
-    <!-- Include Bootstrap CSS -->
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <style>
-        @font-face {
-            font-family: oswald;
-            src: url("/static/fonts/Oswald-Medium.ttf") format('truetype');
-        }
+    return render_template('index.html')
 
-        body{
-            font-family: oswald;
-        }
 
-        .magenta-bar{
-            background-color: #e62272;
-        }
-    </style>
-  </head>
-  <body style="height: 100%;">
-    <div style="padding-top: 10px" class="container align-middle">
-      <div class="row">
-        <div class="col-sm-12 text-center mt-5">
-          <h1 id="value" style="font-size: 8em;">BEDRAG</h1>
-          <div class="progress mt-4" style="height: 30%;">
-            <div style="background-color: #e62272;" id="bar1" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
-          </div>
-          <div class="progress mt-4" style="height: 30%;">
-            <div style="background-color: #e62272;" id="bar2" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
-          </div>
-          <div class="progress mt-4" style="height: 30%;">
-            <div style="background-color: #e62272;" id="bar3" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
-          </div>
-          <div class="progress mt-4" style="height: 30%;">
-            <div style="background-color: #e62272;" id="bar4" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
-          </div>
-          <div class="progress mt-4" style="height: 30%;">
-            <div style="background-color: #e62272;" id="bar5" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
-          </div>
-          <div class="progress mt-4" style="height: 30%;">
-            <div style="background-color: #e62272;" id="bar6" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Include Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-          <script>
-              function updateValue() {
-                  $.getJSON('/total', function(data) {
-                      $('#value').text('Total: €' + data.value);
-                      $('#bar1').width((data.value/500)*100 + '%');
-                      $('#bar2').width((data.value/700)*100 + '%');
-                      $('#bar3').width((data.value/850)*100 + '%');
-                      $('#bar4').width((data.value/1000)*100 + '%');
-                      $('#bar5').width((data.value/1100)*100 + '%');
-                      $('#bar6').width((data.value/1250)*100 + '%');
-                  });
-              }
-              setInterval(updateValue, 1000);
-    </script>
-  </body>
-  </html>
-  '''
-    # return '''
-    #     <!DOCTYPE html>
-    #     <html lang="en">
-    #     <head>
-    #       <meta charset="UTF-8">
-    #       <title>Progress Bar Example</title>
-    #       <!-- Include Bootstrap CSS -->
-    #       <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    #       <style>
-    #           @font-face {
-    #               font-family: oswald;
-    #               src: url("/static/fonts/Oswald-Medium.ttf") format('truetype');
-    #           }
-
-    #           body{
-    #               font-family: oswald;
-    #           }
-
-    #           .magenta-bar{
-    #               background-color: #e62272;
-    #           }
-    #       </style>
-    #     </head>
-    #     <body style="height: 100%;">
-    #       <div style="padding-top: 250px" class="container align-middle">
-    #         <div class="row">
-    #           <div class="col-sm-12 text-center mt-5">
-    #             <h1 id="value" style="font-size: 8em;">BEDRAG</h1>
-    #             <div class="progress mt-4" style="height: 80%;">
-    #               <div style="background-color: #e62272;" id="bar" class="progress-bar progress-bar-striped progress-bar-animated magenta-bar" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="1500" style="width: 50%"></div>
-    #             </div>
-    #           </div>
-    #         </div>
-    #       </div>
-    #       <!-- Include Bootstrap JS -->
-    #       <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-    #       <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    #       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    #       <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    #             <script>
-    #                 function updateValue() {
-    #                     $.getJSON('/total', function(data) {
-    #                         $('#value').text('Total: €' + data.value);
-    #                         $('#bar').width((data.value/1500)*100 + '%');
-                           
-    #                     });
-    #                 }
-    #                 setInterval(updateValue, 1000);
-    #       </script>
-    #     </body>
-    #     </html>
-    # '''
-    
 if __name__ == '__main__':
     app.run()
